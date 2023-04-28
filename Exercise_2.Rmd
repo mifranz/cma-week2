@@ -36,9 +36,20 @@ wildschwein_BE <- wildschwein_BE %>%
   mutate(diff_s = as.numeric(difftime(lead(DatetimeUTC), DatetimeUTC)))
 ```
 
+*How many individuals were tracked?* **`r n_distinct(wildschwein_BE$TierID)`**\
+*For how long were the individual tracked?* **See plot below**\
+*Are there gaps?* **See plot below**\
+*Were all individuals tracked concurrently or sequentially?* **See plot below**\
 
-```{r}
+```{r echo=F}
+ggplot(wildschwein_BE, aes(DatetimeUTC, TierName)) +
+  geom_point() +
+  theme_minimal()
+```
 
+What is the temporal sampling interval between the locations?\
+```{r class.source = 'fold-hide'}
+print(summary(wildschwein_BE$diff_s))
 ```
 
 ***
@@ -53,7 +64,72 @@ wildschwein_BE <-  wildschwein_BE %>%
 ***
 
 ## Task 4
+```{r class.source = 'fold-hide'}
+caro_1 <- read_delim("data/caro60.csv", ",") %>%
+  st_as_sf(coords = c("E", "N"), crs = 2056, remove = FALSE)
+```
+
 ```{r}
+caro_3 <- caro_1 %>%
+  filter(row_number() %% 3 == 1) #filter using modulo
+
+caro_6 <- caro_1 %>%
+  filter(row_number() %% 6 == 1) #filter using modulo
+
+caro_9 <- caro_1 %>%
+  filter(row_number() %% 9 == 1) #filter using modulo
+```  
+
+```{r}
+# calculating timelag, steplength and speed using a loop
+for (interval in c("1", "3", "6", "9")){
+  get_var_name <- paste0("caro_", interval)
+  get_var <- eval(parse(text = get_var_name))
+
+  caro_mutate <-get_var %>%
+    mutate(diff_s = as.numeric(difftime(lead(DatetimeUTC), DatetimeUTC))) %>%
+    mutate(steplength_m=sqrt((lead(E)-E)^2 + (lead(N)-N)^2)) %>%
+    mutate(speed_ms=steplength_m/diff_s)
+  assign(paste0("caro_", interval), caro_mutate)
+}
+```
+
+```{r}
+ggplot() +
+  geom_path(data = caro_1, aes(x = E, y = N, color = "1"), group = 1, alpha=0.6) +
+  geom_point(data = caro_1, aes(x = E, y = N, color = "1"), size = 1.5) +
+  geom_path(data = caro_3, aes(x = E, y = N, color = "3"), group = 1) +
+  geom_point(data = caro_3, aes(x = E, y = N, color = "3"), size = 1.5) +
+  scale_color_manual(values = c(alpha("#051F5E", 0.3), alpha("#f0bd00", 1))) +
+  labs(color = "Sampling Interval") +
+  theme_minimal() +
+  ggtitle("Comparing original- with 3 minutes-resampled data")
+
+```
+
+```{r}
+# Define a list of datasets to combine with caro_1
+datasets <- list(caro_3, caro_6, caro_9)
+
+# Loop over the datasets and generate a plot for each one
+for (i in seq_along(datasets)) {
+  # Combine caro_1 with the current dataset
+  combined_data <- rbind(caro_1, datasets[[i]])
+  
+  # Generate the plot with combined data
+  plot <- ggplot() +
+    geom_path(data = combined_data, aes(x = E, y = N, color = "1"), group = 1, alpha=0.6) +
+    geom_point(data = combined_data, aes(x = E, y = N, color = "1"), size = 1.5) +
+    geom_path(data = datasets[[i]], aes(x = E, y = N, color = "2"), group = 1) +
+    geom_point(data = datasets[[i]], aes(x = E, y = N, color = "2"), size = 1.5) +
+    scale_color_manual(values = c(alpha("#051F5E", 0.3), alpha("#f0bd00", 1))) +
+    labs(color = "Sampling Interval") +
+    theme_minimal() +
+    ggtitle(paste("Comparing caro_1 with caro_", i*3, "-resampled data"))
+  
+  # Print the plot
+  print(plot)
+}
 
 ```
 
