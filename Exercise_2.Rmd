@@ -3,48 +3,68 @@ title: "Exercise 2"
 author: "Micha Franz"
 date: "2023-04-28"
 output: 
-  html_document
-  
-
+  html_document:
+    toc: yes
+    toc_float: true
+    code_folding: "show"
+    css: style.css
 ---
 
-*Packages*
-```{r results=F, echo=F}
+**Packages**
+
+```{r results=F, warning=F, message=F}
 library(readr)
 library(sf)
 library(ggplot2)
 library(dplyr)
 ```
+
 ***
+
 ## Task 1
-```{r results=F}
+```{r message=F}
 wildschwein_BE <- read_delim("data/wildschwein_BE_2056.csv", ",") %>%
   st_as_sf(coords = c("E", "N"), crs = 2056, remove = FALSE)
 ```
+
 ***
 
-```{r}
+## Task 2
+```{r, warning=F}
 wildschwein_BE <- wildschwein_BE %>%
   group_by(TierName) %>%
   mutate(diff_s = as.numeric(difftime(lead(DatetimeUTC), DatetimeUTC)))
-
-ggplot(wildschwein_BE, aes(diff_s)) +
-  geom_histogram(binwidth = 10) +
-  lims(x=c(0,5000/60))
+```
 
 
+```{r}
+
+```
+
+***
+
+## Task 3
+```{r}
 wildschwein_BE <-  wildschwein_BE %>%
   mutate(steplength_m=sqrt((lead(E)-E)^2 + (lead(N)-N)^2)) %>%
   mutate(speed_ms=steplength_m/diff_s)
+```
+
+***
+
+## Task 4
+```{r}
 
 ```
+
 ***
+
+## Task 5
+
 ***
-***
+
 <p style="text-align:center">
-    <a href="mailto:micha.franz@uzh.ch">micha.franz@uzh.ch</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://www.linkedin.com/in/micha-franz-2253a9136/" target="_blank">
-        <img src="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-linkedin-square2-512.png" height="20px" width="20px">
-    </a>
+
+<a href="mailto:micha.franz@uzh.ch">micha.franz\@uzh.ch</a>   \|   <a href="https://www.linkedin.com/in/micha-franz-2253a9136/" target="_blank"> <img src="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-linkedin-square2-512.png" height="20px" width="20px"/> </a>
+
 </p>
