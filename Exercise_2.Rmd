@@ -146,7 +146,7 @@ ggplot() +
 
 ## Task 6
 
-Movement data added to repository
+Movement data added to repository.
 
 ***
 
