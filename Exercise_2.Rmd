@@ -149,7 +149,6 @@ ggplot() +
 Movement data added to repository.
 
 ***
-hkhij
 ## Task 7
 
 ```{r out.width="100%"}
